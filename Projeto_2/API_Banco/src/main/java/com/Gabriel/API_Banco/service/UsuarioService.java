@@ -9,6 +9,7 @@ import com.Gabriel.API_Banco.dto.ListarUsuariosDTO;
 import com.Gabriel.API_Banco.dto.recuperaSenhaDTO;
 import com.Gabriel.API_Banco.exceptions.UsuarioExceptions;
 import com.Gabriel.API_Banco.repository.LojaRepositorio;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.UUID;
 import java.time.LocalDateTime;
+import org.springframework.beans.factory.annotation.Value;
 
 
 
@@ -29,14 +31,26 @@ public class UsuarioService {
     private final ImageService imageService;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
+    private final EmailHttpService emailHttpService;
+
+    @Value("${front.login.url}")
+    private String frontLoginUrl;
 
 
-    public UsuarioService(UsuarioRepositorio r, PasswordEncoder passwordEncoder, LojaRepositorio lr, ImageService imageService, EmailService emailService) {
+    public UsuarioService(
+            UsuarioRepositorio r,
+            PasswordEncoder passwordEncoder,
+            LojaRepositorio lr,
+            ImageService imageService,
+            EmailService emailService,
+            EmailHttpService emailHttpService
+    ) {
         this.r = r;
         this.lr = lr;
         this.imageService = imageService;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
+        this.emailHttpService = emailHttpService;
     }
 
 
@@ -135,40 +149,58 @@ public class UsuarioService {
 
     public ResponseEntity<?> recuperaSenha(recuperaSenhaDTO dto) {
 
-        Optional<Usuario> usuarioOpt = r.findByEmail(dto.getEmail());
-
-        if (usuarioOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body("Email não encontrado");
-        }
-
-        Usuario usuario = usuarioOpt.get();
-
-        if (!usuario.getNome().equalsIgnoreCase(dto.getNome())) {
-            return ResponseEntity.badRequest().body("Nome de usuário não corresponde ao email informado");
-        }
-
-        String senhaAntiga = usuario.getSenha();
-        String senhaTemporaria = gerarSenhaTemporaria();
-
         try {
-            usuario.setSenha(passwordEncoder.encode(senhaTemporaria));
-            r.save(usuario);
+            if (dto.getEmail() == null || dto.getEmail().isBlank()
+                    || dto.getNome() == null || dto.getNome().isBlank()) {
+                return ResponseEntity.badRequest().body("Nome e e-mail são obrigatórios.");
+            }
 
-            String linkLogin = "https://tccvisionplus.vercel.app/Login.html";
+            Optional<Usuario> usuarioOpt = r.findByEmail(dto.getEmail());
 
-            emailService.recuperacaoSenha(dto.getEmail(), linkLogin, senhaTemporaria);
+            if (usuarioOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("Email não encontrado");
+            }
 
-            return ResponseEntity.ok("Email de recuperação enviado com sucesso!");
+            Usuario usuario = usuarioOpt.get();
+
+            if (usuario.getNome() == null || !usuario.getNome().equalsIgnoreCase(dto.getNome())) {
+                return ResponseEntity.badRequest().body("Nome de usuário não corresponde ao email informado");
+            }
+
+            String senhaTemporaria = gerarSenhaTemporaria();
+
+            try {
+                emailHttpService.enviarRecuperacaoSenha(
+                        dto.getEmail(),
+                        frontLoginUrl,
+                        senhaTemporaria
+                );
+
+                usuario.setSenha(passwordEncoder.encode(senhaTemporaria));
+                r.save(usuario);
+
+                return ResponseEntity.ok("Email de recuperação enviado com sucesso!");
+
+            } catch (Exception e) {
+                e.printStackTrace();
+
+                return ResponseEntity
+                        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Erro ao enviar email de recuperação via Resend: "
+                                + e.getClass().getSimpleName()
+                                + " - "
+                                + e.getMessage());
+            }
 
         } catch (Exception e) {
-            usuario.setSenha(senhaAntiga);
-            r.save(usuario);
-
             e.printStackTrace();
 
             return ResponseEntity
-                    .status(500)
-                    .body("Erro ao enviar email de recuperação: " + e.getMessage());
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro interno na recuperação: "
+                            + e.getClass().getSimpleName()
+                            + " - "
+                            + e.getMessage());
         }
     }
 
