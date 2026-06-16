@@ -22,4 +22,6 @@ public interface CupomRepositorio extends JpaRepository<Cupom, Long> {
     long countByLojaIdAndAtivoTrueAndDeletadoFalse(Long lojaId);
 
     boolean existsByLojaIdAndCodigoIgnoreCaseAndDeletadoFalse(Long lojaId, String codigo);
+
+    long countByLojaIdAndDeletadoFalse(Long lojaId);
 }

@@ -67,6 +67,7 @@ public class CupomService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Já existe um cupom com esse código nesta loja.");
         }
 
+        validarPodeCriarCupom(loja);
         validarQuantidadePorPlano(loja, dto.getQuantidadeTotal());
 
         Cupom cupom = new Cupom();
@@ -337,6 +338,8 @@ public class CupomService {
         cupomRepo.save(cupom);
     }
 
+
+
     private Cupom buscarCupom(Long idCupom) {
         Cupom cupom = cupomRepo.findById(idCupom)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cupom não encontrado"));
@@ -385,10 +388,10 @@ public class CupomService {
     private void validarPodeAtivar(Cupom cupom) {
         Loja loja = cupom.getLoja();
 
-        if (loja.getPlano() == null || loja.getPlano() == PlanoLoja.FREE) {
+        if (planoOuFree(loja) == PlanoLoja.FREE) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
-                    "Cupons são um recurso dos planos PLUS e PRO. Faça upgrade para ativar essa feature."
+                    "Cupons são um recurso dos planos pagos. Faça upgrade para ativar campanhas promocionais."
             );
         }
 
@@ -413,22 +416,69 @@ public class CupomService {
     }
 
     private void validarQuantidadePorPlano(Loja loja, Integer quantidadeTotal) {
-        PlanoLoja plano = loja.getPlano() == null ? PlanoLoja.FREE : loja.getPlano();
+        PlanoLoja plano = planoOuFree(loja);
 
         if (plano == PlanoLoja.FREE && quantidadeTotal != null && quantidadeTotal > 0) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Plano FREE não permite cupons.");
         }
 
-        if (plano == PlanoLoja.PLUS && quantidadeTotal != null && quantidadeTotal > 30) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Plano PLUS permite até 30 resgates por cupom.");
+        if (plano == PlanoLoja.STARTER && quantidadeTotal != null && quantidadeTotal > 30) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Plano 1 permite até 30 resgates por cupom.");
         }
 
-        // PRO pode deixar null para ilimitado ou definir quantidade.
+        if (plano == PlanoLoja.PRO && quantidadeTotal != null && quantidadeTotal > 60) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Plano PRO permite até 60 resgates por cupom.");
+        }
+
+        if (plano == PlanoLoja.PLUS && quantidadeTotal != null && quantidadeTotal > 90) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Plano PLUS permite até 90 resgates por cupom.");
+        }
+    }
+
+    public Map<String, Object> limitesPorLoja(Long idLoja) {
+        Loja loja = lojaRepo.findById(idLoja)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Loja não encontrada"));
+
+        PlanoLoja plano = planoOuFree(loja);
+        int limite = limiteCuponsPorPlano(plano);
+        long usados = cupomRepo.countByLojaIdAndDeletadoFalse(idLoja);
+
+        Map<String, Object> limites = new HashMap<>();
+        limites.put("plano", plano);
+        limites.put("limiteCupons", limite);
+        limites.put("cuponsCriados", usados);
+        limites.put("podeCriar", usados < limite);
+
+        return limites;
     }
 
     private int limiteCuponsAtivos(PlanoLoja plano) {
-        if (plano == PlanoLoja.PLUS) return 5;
-        if (plano == PlanoLoja.PRO) return 15;
+        return limiteCuponsPorPlano(plano);
+    }
+
+
+    private void validarPodeCriarCupom(Loja loja) {
+        PlanoLoja plano = planoOuFree(loja);
+        int limite = limiteCuponsPorPlano(plano);
+
+        long totalCriados = cupomRepo.countByLojaIdAndDeletadoFalse(loja.getId());
+
+        if (totalCriados >= limite) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Seu plano permite criar até " + limite + " cupons. Faça upgrade para criar mais campanhas."
+            );
+        }
+    }
+
+    private PlanoLoja planoOuFree(Loja loja) {
+        return loja.getPlano() == null ? PlanoLoja.FREE : loja.getPlano();
+    }
+
+    private int limiteCuponsPorPlano(PlanoLoja plano) {
+        if (plano == PlanoLoja.STARTER) return 3;
+        if (plano == PlanoLoja.PRO) return 6;
+        if (plano == PlanoLoja.PLUS) return 9;
         return 0;
     }
 

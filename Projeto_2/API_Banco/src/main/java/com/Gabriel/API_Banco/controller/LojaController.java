@@ -15,8 +15,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import com.Gabriel.API_Banco.dto.AlterarPlanoLojaDTO;
 
-@CrossOrigin(origins = "*")
+@CrossOrigin(
+        origins = "*",
+        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS}
+)
 @RestController
 @RequestMapping("/lojas")
 public class LojaController {
@@ -47,6 +51,19 @@ public class LojaController {
         return lojaService.findByIdUsuario(idUsuario)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    @PutMapping("/{id}/plano")
+    public ResponseEntity<?> alterarPlano(
+            @PathVariable Long id,
+            @RequestBody AlterarPlanoLojaDTO dto
+    ) {
+        try {
+            Loja loja = lojaService.alterarPlano(id, dto.getIdUsuario(), dto.getPlano());
+            return ResponseEntity.ok(loja);
+        } catch (RuntimeException erro) {
+            return ResponseEntity.badRequest().body(erro.getMessage());
+        }
     }
 
     @GetMapping("/{id}")

@@ -50,6 +50,26 @@ public class LojaService {
 
     }
 
+    public Loja alterarPlano(Long idLoja, Long idUsuario, PlanoLoja novoPlano) {
+        Loja loja = r.findById(idLoja)
+                .orElseThrow(() -> new RuntimeException("Loja não encontrada"));
+
+        if (novoPlano == null) {
+            throw new RuntimeException("Plano inválido.");
+        }
+
+        boolean usuarioEhDono = loja.getDono() != null
+                && loja.getDono().getId().equals(idUsuario);
+
+        if (!usuarioEhDono) {
+            throw new RuntimeException("Você não tem permissão para alterar o plano desta loja.");
+        }
+
+        loja.setPlano(novoPlano);
+
+        return r.save(loja);
+    }
+
     public java.util.Optional<Loja> findByEmailLoja(String email) {
         return r.findByEmail(email);
     }

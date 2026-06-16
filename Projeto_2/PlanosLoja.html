@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Planos da Loja - VisionPlus+</title>
+    <link rel="stylesheet" href="css/pages/PlanosLoja.css">
+</head>
+
+<body>
+    <div id="app-header"></div>
+
+    <main class="pagina-planos">
+        <aside id="barra-menu">
+            <a href="CentralLoja.html">🏠 Central da Loja</a>
+            <a href="ProdutosLoja.html">📦 Meus Produtos</a>
+            <a href="AdminLoja.html">⚙️ Administração</a>
+            <a id="MinhaLoja">👁️ Ver Loja</a>
+            <a href="CuponsLoja.html">🎟️ Gerenciar Cupons</a>
+            <a class="ativo" href="PlanosLoja.html">🚀 Planos e Assinatura</a>
+        </aside>
+
+        <section class="conteudo-planos">
+            <div class="planos-hero">
+                <span class="tag-planos">Assinatura da loja</span>
+
+                <h1>Escolha o plano ideal para sua ótica</h1>
+
+                <p>
+                    Simule o upgrade do plano da loja para liberar recursos de personalização,
+                    campanhas promocionais, cupons e maior destaque no VisionPlus+.
+                </p>
+
+                <div id="plano-atual-box" class="plano-atual-box">
+                    Plano atual: <strong id="plano-atual">Carregando...</strong>
+                </div>
+            </div>
+
+            <div class="cards-planos">
+
+                <article class="card-plano" data-plano="FREE">
+                    <div>
+                        <h2>Gratuito</h2>
+                        <p class="preco">R$ 0<span>/mês</span></p>
+                        <p class="descricao">Ideal para começar a aparecer no VisionPlus+.</p>
+
+                        <ul>
+                            <li>Presença no mapa</li>
+                            <li>Cadastro básico da loja</li>
+                            <li>Catálogo limitado</li>
+                            <li>Suporte por e-mail</li>
+                            <li>0 campanhas promocionais</li>
+                        </ul>
+                    </div>
+
+                    <button class="btn-plano" data-plano="FREE">
+                        Selecionar gratuito
+                    </button>
+                </article>
+
+                <article class="card-plano destaque" data-plano="STARTER">
+                    <div class="selo-recomendado">Mais escolhido</div>
+
+                    <div>
+                        <h2>Plano 1 - STARTER</h2>
+                        <p class="preco">R$ 49,90<span>/mês</span></p>
+                        <p class="descricao">Para óticas que querem iniciar campanhas e promoções.</p>
+
+                        <ul>
+                            <li>Tudo do plano gratuito</li>
+                            <li>Cupons e promoções</li>
+                            <li>Relatórios básicos</li>
+                            <li>Até 3 campanhas promocionais</li>
+                            <li>Personalização básica da loja</li>
+                        </ul>
+                    </div>
+
+                    <button class="btn-plano principal" data-plano="STARTER">
+                        Assinar Plano 1
+                    </button>
+                </article>
+
+                <article class="card-plano" data-plano="PRO">
+                    <div>
+                        <h2>Plano 2 - PRO</h2>
+                        <p class="preco">R$ 89,90<span>/mês</span></p>
+                        <p class="descricao">Para óticas que querem acompanhar melhor seus resultados.</p>
+
+                        <ul>
+                            <li>Tudo do Plano 1</li>
+                            <li>Relatórios avançados</li>
+                            <li>Métricas de performance</li>
+                            <li>Suporte prioritário</li>
+                            <li>Até 6 campanhas promocionais</li>
+                        </ul>
+                    </div>
+
+                    <button class="btn-plano" data-plano="PRO">
+                        Assinar Plano 2
+                    </button>
+                </article>
+
+                <article class="card-plano" data-plano="PLUS">
+                    <div>
+                        <h2>Plano 3 - PLUS</h2>
+                        <p class="preco">R$ 149,90<span>/mês</span></p>
+                        <p class="descricao">Para óticas que querem máxima visibilidade e aderência.</p>
+
+                        <ul>
+                            <li>Tudo do Plano 2</li>
+                            <li>Maior destaque na plataforma</li>
+                            <li>Layout personalizado</li>
+                            <li>Texto de destaque</li>
+                            <li>Até 9 campanhas promocionais</li>
+                        </ul>
+                    </div>
+
+                    <button class="btn-plano" data-plano="PLUS">
+                        Assinar Plano 3
+                    </button>
+                </article>
+
+            </div>
+        </section>
+    </main>
+
+    <div id="modal-pagamento" class="modal-pagamento">
+        <div class="modal-pagamento-content">
+            <button id="fechar-modal-pagamento" class="fechar-modal-pagamento">✕</button>
+
+            <span class="tag-pagamento">Pagamento simulado</span>
+            <h2>Confirmar alteração de plano</h2>
+
+            <p id="texto-confirmacao-plano">
+                Você está alterando o plano da sua loja.
+            </p>
+
+            <div class="pagamento-box">
+                <label>
+                    Nome no cartão
+                    <input type="text" value="Óticas VisionPlus" readonly>
+                </label>
+
+                <label>
+                    Número do cartão
+                    <input type="text" value="**** **** **** 4242" readonly>
+                </label>
+
+                <div class="pagamento-grid">
+                    <label>
+                        Validade
+                        <input type="text" value="12/30" readonly>
+                    </label>
+
+                    <label>
+                        CVV
+                        <input type="text" value="***" readonly>
+                    </label>
+                </div>
+            </div>
+
+            <p class="aviso-simulacao">
+                Este pagamento é apenas uma simulação acadêmica para demonstração do fluxo.
+            </p>
+
+            <button id="confirmar-plano" class="btn-confirmar-plano">
+                Confirmar plano
+            </button>
+        </div>
+    </div>
+
+    <div id="toast-planos" class="toast-planos"></div>
+
+    <script type="module" src="JS/pages/PlanosLoja.js"></script>
+</body>
+
+</html>

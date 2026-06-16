@@ -545,3 +545,12 @@
         grid-template-columns: 1fr;
     }
 }
+
+.btn-criar-cupom.btn-bloqueado-plano {
+    opacity: 0.65;
+    filter: grayscale(0.2);
+    cursor: not-allowed;
+    background: #e5e7eb !important;
+    color: #475569 !important;
+    box-shadow: none !important;
+}

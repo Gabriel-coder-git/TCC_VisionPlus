@@ -527,14 +527,83 @@ p {
     margin: 0;
 }
 
-#receita-arquivo {
-    padding: 10px;
-    background: #f8fafc;
-}
+
 
 #observacoes-cotacao {
     min-height: 110px;
     resize: vertical;
 }
 
+/* ==========================================
+   RECEITA / LGPD NO MODAL DE COTAÇÃO
+========================================== */
 
+.campo-receita {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.campo-receita label span {
+    color: #64748b;
+    font-weight: 500;
+    font-size: 12px;
+}
+
+#receita-arquivo {
+    padding: 10px;
+    background: #f8fafc;
+    border-style: dashed;
+}
+
+.box-consentimento-receita {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    padding: 12px;
+    border: 1px solid #fed7aa;
+    border-radius: 14px;
+
+    background: #fff7ed;
+}
+
+.box-consentimento-receita.escondido {
+    display: none;
+}
+
+.aviso-dado-sensivel {
+    margin: 0;
+    color: #9a3412;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.consentimento-receita {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: flex-start;
+    gap: 10px;
+
+    color: #334155;
+    font-size: 13px !important;
+    line-height: 1.4;
+    font-weight: 600 !important;
+
+    cursor: pointer;
+}
+
+.consentimento-receita input[type="checkbox"] {
+    width: 16px !important;
+    height: 16px !important;
+    min-width: 16px;
+    margin-top: 2px;
+    padding: 0 !important;
+
+    accent-color: var(--cor-primaria);
+    cursor: pointer;
+}
+
+.consentimento-receita span {
+    flex: 1;
+}

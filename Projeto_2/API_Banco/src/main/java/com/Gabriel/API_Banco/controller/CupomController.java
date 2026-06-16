@@ -112,6 +112,11 @@ public class CupomController {
         return ResponseEntity.ok(cupomService.listarCuponsDoUsuario(idUsuario));
     }
 
+    @GetMapping("/loja/{idLoja}/limites")
+    public ResponseEntity<?> limitesPorLoja(@PathVariable Long idLoja) {
+        return ResponseEntity.ok(cupomService.limitesPorLoja(idLoja));
+    }
+
     @PostMapping("/cotacoes/{idCotacao}/aplicar")
     public ResponseEntity<?> aplicarCupom(
             @PathVariable Long idCotacao,

@@ -55,6 +55,26 @@ export function getLojaAtual() {
     return lojaAtual;
 }
 
+export async function alterarPlanoLoja(idLoja, idUsuario, plano) {
+    const response = await fetch(`${API}/lojas/${idLoja}/plano`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            idUsuario,
+            plano
+        })
+    });
+
+    if (!response.ok) {
+        const erro = await response.text();
+        throw new Error(erro || "Erro ao alterar plano da loja.");
+    }
+
+    return await response.json();
+}
+
 /**
  * Busca as configurações da loja
  */

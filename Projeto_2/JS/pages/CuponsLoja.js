@@ -7,12 +7,31 @@ import {
     ativarCupomPublico,
     desativarCupom,
     deletarCupom,
-    enviarCupomParaUsuarios
+    enviarCupomParaUsuarios,
+    limitesCuponsDaLoja
 } from "../core/cupons.js";
 
 let usuarioLogado = null;
 let lojaAtual = null;
 let cupons = [];
+
+let limitesPlano = {
+    plano: "FREE",
+    limiteCupons: 0,
+    cuponsCriados: 0,
+    podeCriar: false
+};
+
+function formatarPlano(plano) {
+    const nomes = {
+        FREE: "Gratuito",
+        STARTER: "Plano 1",
+        PRO: "Plano 2",
+        PLUS: "Plano 3"
+    };
+
+    return nomes[plano] || plano;
+}
 
 document.addEventListener("DOMContentLoaded", async () => {
     configurarHeader();
@@ -36,19 +55,54 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
-    if ((lojaAtual.plano || "FREE") === "FREE") {
-        document.getElementById("bloqueio-cupons-pagina")?.classList.remove("hidden");
-        document.getElementById("resumo-cupons-loja")?.classList.add("hidden");
-        document.getElementById("lista-cupons-loja")?.classList.add("hidden");
-        document.getElementById("btn-abrir-modal-cupom")?.classList.add("hidden");
-        return;
-    }
+
 
     await carregarCupons();
 });
 
+function atualizarEstadoBotaoCriarCupom() {
+    const botao = document.getElementById("btn-abrir-modal-cupom");
+    if (!botao) return;
+
+    const limite = limitesPlano?.limiteCupons ?? 0;
+    const usados = limitesPlano?.cuponsCriados ?? cupons.length;
+    const plano = limitesPlano?.plano || lojaAtual?.plano || "FREE";
+
+    const bloqueado = limite === 0 || usados >= limite;
+
+    botao.classList.toggle("btn-bloqueado-plano", bloqueado);
+
+    if (bloqueado) {
+        botao.textContent = limite === 0
+            ? "+ Criar cupom"
+            : `Limite atingido (${usados}/${limite})`;
+
+        botao.title = limite === 0
+            ? "Seu plano gratuito não permite criar cupons."
+            : `Seu plano ${formatarPlano(plano)} permite até ${limite} cupons.`;
+    } else {
+        botao.textContent = `+ Criar cupom (${usados}/${limite})`;
+        botao.title = "";
+    }
+}
+
 function configurarEventos() {
-    document.getElementById("btn-abrir-modal-cupom")?.addEventListener("click", abrirModalCriacao);
+    document.getElementById("btn-abrir-modal-cupom")?.addEventListener("click", () => {
+        const limite = limitesPlano?.limiteCupons ?? 0;
+        const usados = limitesPlano?.cuponsCriados ?? cupons.length;
+        const plano = limitesPlano?.plano || lojaAtual?.plano || "FREE";
+
+        if (limite === 0 || usados >= limite) {
+            alert(
+                limite === 0
+                    ? "Seu plano gratuito não permite criar cupons. Faça upgrade para liberar campanhas promocionais."
+                    : `Você já usou ${usados}/${limite} cupons do plano ${formatarPlano(plano)}. Faça upgrade para criar mais.`
+            );
+            return;
+        }
+
+        abrirModalCriacao();
+    });
 
     document.getElementById("btn-fechar-modal-cupom")?.addEventListener("click", fecharModalCupom);
     document.getElementById("btn-cancelar-modal-cupom")?.addEventListener("click", fecharModalCupom);
@@ -103,6 +157,7 @@ async function carregarCupons() {
     container.innerHTML = "<p>Carregando cupons...</p>";
 
     try {
+        limitesPlano = await limitesCuponsDaLoja(lojaAtual.id);
         cupons = await listarCuponsDaLoja(lojaAtual.id);
 
         atualizarResumoPagina();
@@ -134,9 +189,19 @@ function atualizarResumoPagina() {
     const ativos = cupons.filter(c => c.ativo === true).length;
     const resgates = cupons.reduce((acc, c) => acc + Number(c.quantidadeResgatada || 0), 0);
 
-    setTexto("cupom-page-total", total);
+    const limite = limitesPlano?.limiteCupons ?? 0;
+    const plano = limitesPlano?.plano || lojaAtual?.plano || "FREE";
+
+    setTexto("cupom-page-total", `${total}/${limite}`);
     setTexto("cupom-page-ativos", ativos);
     setTexto("cupom-page-resgates", resgates);
+
+    const metaTotal = document.querySelector("#cupom-page-total")?.closest(".stat-card")?.querySelector(".stat-meta");
+    if (metaTotal) {
+        metaTotal.textContent = `limite do plano ${formatarPlano(plano)}`;
+    }
+
+    atualizarEstadoBotaoCriarCupom();
 }
 
 function criarCardCupom(cupom) {

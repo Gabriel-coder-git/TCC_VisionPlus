@@ -23,6 +23,9 @@ const imgLente = document.getElementById("foto-lente");
 const imgArmacao = document.getElementById("foto-armacao");
 const msgPaginaLoja = document.getElementById("msgPaginaLoja");
 const btnEnviarCotacao = document.getElementById("btn-enviar-cotacao");
+const inputReceita = document.getElementById("receita-arquivo");
+const boxConsentimentoReceita = document.getElementById("box-consentimento-receita");
+const checkboxConsentimentoReceita = document.getElementById("consentimento-receita");
 
 // ------------------------------
 // Utils
@@ -63,6 +66,26 @@ function desbloquearBotao(botao) {
 function usuarioPodeSolicitarCotacao() {
     const usuario = getUsuarioLogado();
     return usuario && usuario.tipoUsuario === "Comum";
+}
+
+function validarFaixaDecimal(valor, nomeCampo, minimo, maximo) {
+    if (valor === null || valor === undefined || valor === "") return true;
+
+    if (Number.isNaN(valor)) {
+        mostrarMensagem(msgPaginaLoja, `${nomeCampo} precisa ser um número válido.`, "erro");
+        return false;
+    }
+
+    if (valor < minimo || valor > maximo) {
+        mostrarMensagem(
+            msgPaginaLoja,
+            `${nomeCampo} deve estar entre ${minimo} e ${maximo}.`,
+            "erro"
+        );
+        return false;
+    }
+
+    return true;
 }
 
 function validarPermissaoCotacao() {
@@ -229,6 +252,17 @@ modal?.addEventListener("click", (event) => {
     }
 });
 
+inputReceita?.addEventListener("change", () => {
+    const temReceita = inputReceita.files && inputReceita.files.length > 0;
+
+    boxConsentimentoReceita?.classList.toggle("escondido", !temReceita);
+
+    if (checkboxConsentimentoReceita) {
+        checkboxConsentimentoReceita.checked = false;
+        checkboxConsentimentoReceita.required = temReceita;
+    }
+});
+
 // ------------------------------
 // Envio da cotação
 // ------------------------------
@@ -258,6 +292,14 @@ formCotacao?.addEventListener("submit", async (event) => {
     const eixoEsquerdo = inteiroOuNull("eixo-esq");
     const eixoDireito = inteiroOuNull("eixo-dir");
     const adicao = numeroDecimalOuNull("adicao");
+
+    if (!validarFaixaDecimal(esfericoEsquerdo, "Esférico OE", -30, 30)) return;
+    if (!validarFaixaDecimal(esfericoDireito, "Esférico OD", -30, 30)) return;
+
+    if (!validarFaixaDecimal(cilindricoEsquerdo, "Cilíndrico OE", -10, 10)) return;
+    if (!validarFaixaDecimal(cilindricoDireito, "Cilíndrico OD", -10, 10)) return;
+
+    if (!validarFaixaDecimal(adicao, "Adição", 0, 4)) return;
     const tipoLenteDesejado = document.getElementById("tipo-lente-desejado")?.value || null;
     const tratamentosDesejados = obterTratamentosSelecionados();
     const observacoes = document.getElementById("observacoes-cotacao")?.value.trim() || null;
@@ -269,10 +311,17 @@ formCotacao?.addEventListener("submit", async (event) => {
         return;
     }
 
-    if (adicao !== null && adicao < 0) {
-        mostrarMensagem(msgPaginaLoja, "Adição deve ser positiva ou zero.", "erro");
+    const consentimentoReceita = checkboxConsentimentoReceita?.checked || false;
+
+    if (receitaArquivo && !consentimentoReceita) {
+        mostrarMensagem(
+            msgPaginaLoja,
+            "Para anexar a receita, você precisa aceitar o uso desses dados para a cotação.",
+            "erro"
+        );
         return;
     }
+
 
     const temAlgumDadoTecnico = [
         esfericoEsquerdo, esfericoDireito, cilindricoEsquerdo, cilindricoDireito,
@@ -342,6 +391,13 @@ formCotacao?.addEventListener("submit", async (event) => {
         imagensProdutos();
 
         formCotacao.reset();
+
+        boxConsentimentoReceita?.classList.add("escondido");
+
+        if (checkboxConsentimentoReceita) {
+            checkboxConsentimentoReceita.checked = false;
+            checkboxConsentimentoReceita.required = false;
+        }
         modal.classList.remove("ativo");
 
     } catch (error) {

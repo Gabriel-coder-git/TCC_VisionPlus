@@ -74,3 +74,7 @@ export function aplicarCupomNaCotacao(idCotacao, idUsuario, idCupomUsuario) {
         })
     });
 }
+
+export function limitesCuponsDaLoja(idLoja) {
+    return apiFetch(`/cupons/loja/${idLoja}/limites`);
+}
