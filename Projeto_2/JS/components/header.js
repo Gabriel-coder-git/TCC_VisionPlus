@@ -82,8 +82,8 @@ function montarPerfil() {
 
 function montarCarrinho() {
     return `
-        <div id="menu-carrinho" class="cart-menu">
-            <img src="imgs/231-2317482_white-shopping-cart-png-download-buy-icon-white.png" class="icon">
+        <div>
+            
         </div>
     `;
 } 

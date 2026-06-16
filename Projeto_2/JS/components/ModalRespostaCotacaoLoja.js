@@ -51,7 +51,21 @@ function normalizarStatus(status) {
 }
 
 function formatarStatus(status) {
-    return normalizarStatus(status).replace(/_/g, " ");
+    const s = normalizarStatus(status);
+
+    const nomes = {
+        SOLICITADA: "SOLICITADA",
+        RESPONDIDA: "PROPOSTA ENVIADA",
+        EM_NEGOCIACAO: "EM NEGOCIAÇÃO",
+        APROVADA: "PROPOSTA APROVADA",
+        AGUARDANDO_SINAL: "AGUARDANDO RETIRADA",
+        RESERVADA: "RESERVADA PARA RETIRADA",
+        FINALIZADA: "FINALIZADA",
+        CANCELADA: "CANCELADA",
+        REJEITADA: "REJEITADA"
+    };
+
+    return nomes[s] || s.replace(/_/g, " ");
 }
 
 function getIdCotacao(cotacao) {
@@ -306,11 +320,7 @@ function renderizarPainelLoja(cotacao, modal, onStatusAtualizado) {
     }
 
     if (status === "APROVADA") {
-        acoes.appendChild(criarBotao("Exigir sinal antes de reservar", "btn-reserva", async (btn) => {
-            await executarTransicao(cotacao, "AGUARDANDO_SINAL", btn, modal, onStatusAtualizado);
-        }));
-
-        acoes.appendChild(criarBotao("Reservar produto direto", "btn-aprovar", async (btn) => {
+        acoes.appendChild(criarBotao("Reservar produto para retirada", "btn-aprovar", async (btn) => {
             await executarTransicao(cotacao, "RESERVADA", btn, modal, onStatusAtualizado);
         }));
     }
@@ -322,9 +332,10 @@ function renderizarPainelLoja(cotacao, modal, onStatusAtualizado) {
     }
 
     if (status === "RESERVADA") {
-        acoes.appendChild(criarBotao("Finalizar — produto entregue", "btn-finalizar", async (btn) => {
-            await executarTransicao(cotacao, "FINALIZADA", btn, modal, onStatusAtualizado);
-        }));
+        const aguardandoRetirada = document.createElement("div");
+        aguardandoRetirada.className = "resposta-bloqueada";
+        aguardandoRetirada.textContent = "Produto reservado. Aguarde o consumidor confirmar a retirada.";
+        acoes.appendChild(aguardandoRetirada);
     }
 
     if (["CANCELADA", "REJEITADA", "FINALIZADA"].includes(status)) {

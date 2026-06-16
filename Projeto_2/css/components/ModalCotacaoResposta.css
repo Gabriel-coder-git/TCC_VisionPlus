@@ -553,3 +553,16 @@
     text-decoration: none;
     font-weight: 800;
 }
+
+.box-retirada-cotacao {
+    margin-top: 14px;
+    padding: 12px;
+    border-radius: 14px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+}
+
+.box-retirada-cotacao .painel-label {
+    color: #166534;
+    margin-bottom: 8px;
+}

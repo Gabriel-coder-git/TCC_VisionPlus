@@ -54,7 +54,21 @@ function normalizarStatus(status) {
 }
 
 function formatarStatus(status) {
-    return normalizarStatus(status).replace(/_/g, " ");
+    const s = normalizarStatus(status);
+
+    const nomes = {
+        SOLICITADA: "SOLICITADA",
+        RESPONDIDA: "PROPOSTA ENVIADA",
+        NEGOCIANDO: "EM NEGOCIAÇÃO",
+        APROVADA: "PROPOSTA APROVADA",
+        AGUARDANDO_SINAL: "AGUARDANDO RETIRADA",
+        RESERVADA: "RESERVADA PARA RETIRADA",
+        FINALIZADA: "FINALIZADA",
+        CANCELADA: "CANCELADA",
+        REJEITADA: "REJEITADA"
+    };
+
+    return nomes[s] || s.replace(/_/g, " ");
 }
 
 function getIdCotacao(cotacao) {
@@ -71,6 +85,88 @@ function formatarEnum(valor) {
 
 function formatarTratamentos(valor) {
     return valor ? valor.split(",").map(item => item.replace(/_/g, " ")).join(", ") : "—";
+}
+
+function calcularDataEstimada(cotacao) {
+    const prazo = cotacao.prazoEntregaConfirmado ?? cotacao.prazoEntrega ?? cotacao.produto?.prazoEntrega;
+
+    if (!prazo) return "A combinar com a loja";
+
+    const dataBaseRaw =
+        cotacao.dataCriacao ||
+        cotacao.criadoEm ||
+        cotacao.createdAt ||
+        cotacao.dataSolicitacao ||
+        cotacao.atualizadoEm ||
+        new Date();
+
+    const dataBase = new Date(dataBaseRaw);
+
+    if (Number.isNaN(dataBase.getTime())) {
+        return `${prazo} dias após a proposta`;
+    }
+
+    dataBase.setDate(dataBase.getDate() + Number(prazo));
+
+    return dataBase.toLocaleDateString("pt-BR");
+}
+
+function formatarDinheiro(valor) {
+    if (valor === null || valor === undefined || valor === "") return "—";
+
+    const numero = Number(valor);
+
+    if (Number.isNaN(numero)) return valor;
+
+    return numero.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+    });
+}
+
+function blocoRetirada(cotacao) {
+    const status = normalizarStatus(cotacao.status);
+
+    if (!["APROVADA", "AGUARDANDO_SINAL", "RESERVADA", "FINALIZADA"].includes(status)) {
+        return "";
+    }
+
+    const nomeLoja = cotacao.loja?.nome || cotacao.nomeLoja || "Ótica";
+    const enderecoLoja = cotacao.loja?.endereco || cotacao.enderecoLoja || "Endereço da loja não informado";
+    const valorFinal = cotacao.valorFinal ?? cotacao.produto?.valor ?? cotacao.valorBase;
+    const prazo = cotacao.prazoEntregaConfirmado ?? cotacao.prazoEntrega ?? cotacao.produto?.prazoEntrega;
+    const dataEstimada = calcularDataEstimada(cotacao);
+
+    return `
+        <div class="box-retirada-cotacao">
+            <p class="painel-label">Retirada</p>
+
+            <div class="dado-row">
+                <span class="dado-chave">Local</span>
+                <span class="dado-valor">${nomeLoja}</span>
+            </div>
+
+            <div class="dado-row">
+                <span class="dado-chave">Endereço</span>
+                <span class="dado-valor">${enderecoLoja}</span>
+            </div>
+
+            <div class="dado-row">
+                <span class="dado-chave">Valor final</span>
+                <span class="dado-valor" style="color:#0f6e56">${formatarDinheiro(valorFinal)}</span>
+            </div>
+
+            <div class="dado-row">
+                <span class="dado-chave">Data estimada de retirada</span>
+                <span class="dado-valor">${dataEstimada}</span>
+            </div>
+
+            <div class="dado-row">
+                <span class="dado-chave">Prazo informado</span>
+                <span class="dado-valor">${prazo ? prazo + " dias" : "A combinar com a loja"}</span>
+            </div>
+        </div>
+    `;
 }
 
 function usuarioPodeUsarModalConsumidor(usuario) {
@@ -232,7 +328,8 @@ function renderizarPainelConsumidor(cotacao, modal, onStatusAtualizado) {
     }
 
     if (status === "RESERVADA") {
-        acoes.appendChild(criarBotao("Finalizar — produto retirado", "btn-finalizar", async (btn) => {
+        acoes.appendChild(criarBotao("Confirmar que retirei o produto", "btn-finalizar", async (btn) => {
+            if (!confirm("Confirmar que você retirou o produto na ótica?")) return;
             await executarTransicao(cotacao, "FINALIZADA", btn, modal, onStatusAtualizado);
         }));
     }
@@ -247,7 +344,7 @@ function renderizarPainelConsumidor(cotacao, modal, onStatusAtualizado) {
     if (status === "APROVADA") {
         const aprovada = document.createElement("div");
         aprovada.className = "resposta-bloqueada";
-        aprovada.textContent = "Proposta aprovada. Aguarde a próxima etapa de reserva/sinal.";
+        aprovada.textContent = "Proposta aprovada. Aguarde a loja reservar o produto para retirada.";
         acoes.appendChild(aprovada);
     }
 
@@ -389,6 +486,8 @@ export function abrirModalCotacaoConsumidor(cotacao, onStatusAtualizado) {
                                 </span>
                             </div>
                         ` : ""}
+
+                        ${blocoRetirada(cotacao)}
                     </div>
 
                     <div id="painelAcoes"></div>
