@@ -44,6 +44,9 @@ public class UsuarioController {
         } catch (UsuarioExceptions e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(e.getMessage());
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
         }
     }
 
@@ -84,7 +87,7 @@ public class UsuarioController {
 
             if (senhaValida) {
                 usuarioEncontrado.setSenha(passwordEncoder.encode(senhaDigitada));
-                s.salvar(usuarioEncontrado);
+                r.save(usuarioEncontrado);
             }
         }
 
