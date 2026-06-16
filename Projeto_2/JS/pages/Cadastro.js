@@ -35,6 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let emailDisponivel = false;
     let processando = false;
     let cadastroSucesso = false;
+    let termosAceitos = false;
 
     // ==============================
     // TERMOS DE USO
@@ -52,26 +53,41 @@ document.addEventListener("DOMContentLoaded", () => {
         btnAceitarTermos.classList.toggle("habilitado", checkModalTermos.checked);
     });
 
-    abrirTermos.addEventListener("click", (event) => {
-        event.preventDefault();
-
+    function abrirModalTermos() {
         checkModalTermos.checked = false;
         btnAceitarTermos.classList.remove("habilitado");
         modalTermos.classList.add("ativo");
+    }
+
+    abrirTermos.addEventListener("click", (event) => {
+        event.preventDefault();
+        abrirModalTermos();
+    });
+
+    checkTermos.addEventListener("click", (event) => {
+        if (!termosAceitos) {
+            event.preventDefault();
+            abrirModalTermos();
+            return;
+        }
+
+        event.preventDefault();
+        checkTermos.checked = true;
     });
 
     btnCancelarTermos.addEventListener("click", () => {
         modalTermos.classList.remove("ativo");
         checkModalTermos.checked = false;
         btnAceitarTermos.classList.remove("habilitado");
+
+        termosAceitos = false;
         checkTermos.checked = false;
-        checkTermos.disabled = true;
     });
 
     btnAceitarTermos.addEventListener("click", () => {
         if (!checkModalTermos.checked) return;
 
-        checkTermos.disabled = false;
+        termosAceitos = true;
         checkTermos.checked = true;
 
         modalTermos.classList.remove("ativo");
@@ -85,7 +101,6 @@ document.addEventListener("DOMContentLoaded", () => {
             modalTermos.classList.remove("ativo");
         }
     });
-
     // ==============================
     // TOAST
     // ==============================
@@ -182,10 +197,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function mostrarRegrasCard() {
         regrasCard.classList.add("mostrar");
+    }
 
-        setTimeout(() => {
+    function esconderRegrasSeCamposVazios() {
+        if (!senhaInput.value && !confirmarSenhaInput.value) {
             regrasCard.classList.remove("mostrar");
-        }, 7000);
+        }
     }
 
     function atualizarRegra(elemento, condicao) {
@@ -242,22 +259,50 @@ document.addEventListener("DOMContentLoaded", () => {
         return senhaEhValida;
     }
 
-    senhaInput.addEventListener("input", validarSenhaTempoReal);
+    senhaInput.addEventListener("focus", mostrarRegrasCard);
+    confirmarSenhaInput.addEventListener("focus", mostrarRegrasCard);
 
+    senhaInput.addEventListener("input", () => {
+        mostrarRegrasCard();
+        validarSenhaTempoReal();
+    });
+
+    confirmarSenhaInput.addEventListener("input", () => {
+        mostrarRegrasCard();
+        validarSenhaTempoReal();
+    });
+
+    senhaInput.addEventListener("blur", esconderRegrasSeCamposVazios);
+    confirmarSenhaInput.addEventListener("blur", esconderRegrasSeCamposVazios);
     // ==============================
     // SUBMIT
     // ==============================
+
+    function travarBotao(texto = "Validando...") {
+        processando = true;
+        btnSubmit.classList.add("carregando");
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = texto;
+    }
+
+    function destravarBotao() {
+        processando = false;
+        btnSubmit.classList.remove("carregando");
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = "Registrar";
+    }
 
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
 
         if (processando) return;
-
+        travarBotao("Validando...");
         cadastroSucesso = false;
 
-        if (!checkTermos.checked) {
+        if (!termosAceitos || !checkTermos.checked) {
             avisoTermos.style.display = "block";
             mostrarMensagem(msgSenha, "Você precisa aceitar os termos de uso.", "erro");
+            destravarBotao();
             return;
         }
 
@@ -268,6 +313,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!nome || !email || !senha || !confirmarSenha) {
             mostrarMensagem(msgSenha, "Preencha todos os campos.", "erro");
+            destravarBotao();
             return;
         }
 
@@ -276,19 +322,17 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!senhaValida) {
             mostrarMensagem(msgSenha, "Senha não atende aos requisitos.", "erro");
             mostrarRegrasCard();
+            destravarBotao();
             return;
         }
 
         if (senha !== confirmarSenha) {
             mostrarMensagem(msgSenha, "As senhas não conferem.", "erro");
+            destravarBotao();
             return;
         }
 
         try {
-            processando = true;
-            btnSubmit.classList.add("carregando");
-            btnSubmit.disabled = true;
-            btnSubmit.textContent = "Validando...";
 
             const nomeJaExiste = await validarNomeUsuario(nome);
             const emailJaExiste = await validarEmail(email);
@@ -312,7 +356,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 nome,
                 email,
                 senha,
-                tipoUsuario: "Comum"
+                tipoUsuario: "Comum",
+                aceitouTermos: termosAceitos,
+                versaoTermos: "v2"
             };
 
             btnSubmit.textContent = "Registrando...";
@@ -347,8 +393,8 @@ document.addEventListener("DOMContentLoaded", () => {
             checkModalTermos.checked = false;
             btnAceitarTermos.classList.remove("habilitado");
 
+            termosAceitos = false;
             checkTermos.checked = false;
-            checkTermos.disabled = true;
 
             nomeDisponivel = false;
             emailDisponivel = false;

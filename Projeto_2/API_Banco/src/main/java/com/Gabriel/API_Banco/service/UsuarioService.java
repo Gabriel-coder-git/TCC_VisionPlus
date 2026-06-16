@@ -48,15 +48,21 @@ public class UsuarioService {
             throw new UsuarioExceptions("Email já cadastrado");
         }
 
+        if (r.existsByNome(usuario.getNome())) {
+            throw new UsuarioExceptions("Nome de usuário já cadastrado");
+        }
+
         if (usuario.getSenha() == null || usuario.getSenha().isBlank()) {
             throw new RuntimeException("Senha é obrigatória.");
         }
 
-        usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
+
 
         if (usuario.getAceitouTermos() == null || !usuario.getAceitouTermos()) {
             throw new RuntimeException("É necessário aceitar os Termos de Uso e a Política de Privacidade.");
         }
+
+        usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
 
         usuario.setVersaoTermos("v2");
         usuario.setDataAceiteTermos(LocalDateTime.now());
