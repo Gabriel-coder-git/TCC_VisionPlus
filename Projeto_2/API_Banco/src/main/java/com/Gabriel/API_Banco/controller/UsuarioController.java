@@ -63,9 +63,21 @@ public class UsuarioController {
         String senhaDigitada = usuario.getSenha();
         String senhaNoBanco = usuarioEncontrado.getSenha();
 
+        if (senhaDigitada == null || senhaDigitada.isBlank()) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Senha não informada.");
+        }
+
+        if (senhaNoBanco == null || senhaNoBanco.isBlank()) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("Senha inválida. Redefina sua senha.");
+        }
+
         boolean senhaValida;
 
-        if (senhaNoBanco != null && senhaNoBanco.startsWith("$2")) {
+        if (senhaNoBanco.startsWith("$2a$") || senhaNoBanco.startsWith("$2b$") || senhaNoBanco.startsWith("$2y$")) {
             senhaValida = passwordEncoder.matches(senhaDigitada, senhaNoBanco);
         } else {
             senhaValida = senhaDigitada.equals(senhaNoBanco);
