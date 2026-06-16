@@ -137,7 +137,7 @@ public class UsuarioService {
 
         Optional<Usuario> usuarioOpt = r.findByEmail(dto.getEmail());
 
-        if (!usuarioOpt.isPresent()) {
+        if (usuarioOpt.isEmpty()) {
             return ResponseEntity.badRequest().body("Email não encontrado");
         }
 
@@ -147,16 +147,29 @@ public class UsuarioService {
             return ResponseEntity.badRequest().body("Nome de usuário não corresponde ao email informado");
         }
 
+        String senhaAntiga = usuario.getSenha();
         String senhaTemporaria = gerarSenhaTemporaria();
 
-        usuario.setSenha(senhaTemporaria);
-        r.save(usuario);
+        try {
+            usuario.setSenha(passwordEncoder.encode(senhaTemporaria));
+            r.save(usuario);
 
-        String linkLogin = "http://127.0.0.1:5500/Login.html";
+            String linkLogin = "https://tccvisionplus.vercel.app/Login.html";
 
-        emailService.recuperacaoSenha(dto.getEmail(), linkLogin, senhaTemporaria);
+            emailService.recuperacaoSenha(dto.getEmail(), linkLogin, senhaTemporaria);
 
-        return ResponseEntity.ok("Email de recuperação enviado com sucesso!");
+            return ResponseEntity.ok("Email de recuperação enviado com sucesso!");
+
+        } catch (Exception e) {
+            usuario.setSenha(senhaAntiga);
+            r.save(usuario);
+
+            e.printStackTrace();
+
+            return ResponseEntity
+                    .status(500)
+                    .body("Erro ao enviar email de recuperação: " + e.getMessage());
+        }
     }
 
     private String gerarSenhaTemporaria() {

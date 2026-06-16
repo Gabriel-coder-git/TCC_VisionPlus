@@ -1,6 +1,7 @@
 package com.Gabriel.API_Banco.service;
 import com.Gabriel.API_Banco.model.Cotacao;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -13,10 +14,14 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
+    @Value("${spring.mail.username}")
+    private String remetente;
+
     public void enviarEmail(String para, String assunto, String texto) {
 
         SimpleMailMessage message = new SimpleMailMessage();
 
+        message.setFrom(remetente);
         message.setTo(para);
         message.setSubject(assunto);
         message.setText(texto);
@@ -28,6 +33,7 @@ public class EmailService {
 
         SimpleMailMessage message = new SimpleMailMessage();
 
+        message.setFrom(remetente);
         message.setTo(para);
         message.setSubject("Recuperação de senha - VisionPlus+");
 
@@ -36,7 +42,7 @@ public class EmailService {
                         "Recebemos uma solicitação de recuperação de senha para sua conta na VisionPlus+.\n\n" +
                         "Sua senha temporária é:\n\n" +
                         senhaTemporaria + "\n\n" +
-                        "Use essa senha para acessar sua conta e, se desejar, altere sua senha depois.\n\n" +
+                        "Use essa senha para acessar sua conta.\n\n" +
                         "Link de acesso:\n" +
                         link + "\n\n" +
                         "Caso você não tenha solicitado essa recuperação, ignore este e-mail."
