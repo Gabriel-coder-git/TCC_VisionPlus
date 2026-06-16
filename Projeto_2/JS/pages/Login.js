@@ -52,6 +52,11 @@ document.addEventListener("DOMContentLoaded", () => {
         window.location.href = "PaginaPrincipal.html";
     }
 
+    function obterTurnstileToken() {
+        const inputToken = document.querySelector('input[name="cf-turnstile-response"]');
+        return turnstileToken || inputToken?.value || "";
+    }
+
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
 
@@ -65,7 +70,9 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        if (!turnstileToken) {
+        const captchaToken = obterTurnstileToken();
+
+        if (!captchaToken) {
             mostrarMensagem(msgLogin, "Confirme que você não é um robô.", "erro");
             return;
         }
@@ -73,7 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const usuarioLogin = {
             email,
             senha,
-            captchaToken: turnstileToken
+            captchaToken: captchaToken
         };
 
         try {
