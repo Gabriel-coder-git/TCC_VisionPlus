@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>Recuperar Senha</title>
     <link rel="stylesheet" href="css/pages/Cadastro.css">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 
 <body>
@@ -19,7 +20,7 @@
 
             <!-- LADO ESQUERDO: GIFS -->
             <section class="auth-visual">
-                
+
                 <img id="authGif"
                     src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExcmxoZGxkZHZtMG54dGtmajh0cnp3M25wZDBnanRkMnEzZnJoNHVkaSZlcD12MV9pbnRlcm5hbF9naWQmY3Q9Zw/xUOrw1p8ATwqTPX1NC/giphy.gif"
                     alt="Animação VisionPlus+">
@@ -59,7 +60,10 @@
 
                         <label for="email">Email:</label>
                         <input type="email" id="email" name="email" required><br>
-                        
+
+                        <div class="cf-turnstile" data-sitekey="0x4AAAAAADl7BW2lWXKio9KV"
+                            data-callback="onTurnstileSuccess" data-expired-callback="onTurnstileExpired">
+                        </div>
 
                         <button type="submit">Recuperar Senha</button>
                     </form>

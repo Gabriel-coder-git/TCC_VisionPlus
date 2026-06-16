@@ -9,6 +9,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const form = document.querySelector("#cadastroForm");
 
+    let termosAceitos = false;
+
+    window.onTurnstileCadastroSuccess = function (token) {
+        turnstileToken = token;
+    };
+
+    window.onTurnstileCadastroExpired = function () {
+        turnstileToken = null;
+    };
+
     const regrasCard = document.querySelector("#regrasCard");
     const senhaInput = document.querySelector("#senha");
     const confirmarSenhaInput = document.querySelector("#confirmarSenha");
@@ -35,7 +45,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let emailDisponivel = false;
     let processando = false;
     let cadastroSucesso = false;
-    let termosAceitos = false;
 
     // ==============================
     // TERMOS DE USO
@@ -306,6 +315,12 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+        if (!turnstileToken) {
+            mostrarMensagem(msgSenha, "Confirme que você não é um robô.", "erro");
+            destravarBotao();
+            return;
+        }
+
         const nome = inputNome.value.trim();
         const email = inputEmail.value.trim();
         const senha = senhaInput.value;
@@ -358,7 +373,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 senha,
                 tipoUsuario: "Comum",
                 aceitouTermos: termosAceitos,
-                versaoTermos: "v2"
+                versaoTermos: "v2",
+                captchaToken: turnstileToken
             };
 
             btnSubmit.textContent = "Registrando...";
@@ -416,6 +432,11 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
         } finally {
+            if (window.turnstile) {
+                window.turnstile.reset();
+                turnstileToken = null;
+            }
+
             if (!cadastroSucesso) {
                 processando = false;
                 btnSubmit.classList.remove("carregando");

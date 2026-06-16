@@ -6,9 +6,10 @@
     <title>Cadastro de Usuário</title>
     <link rel="stylesheet" href="css/pages/Cadastro.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 
-<body>
+<body class="cadastro-page">
     <div id="mensagensTopo">
         <div id="msgNome" class="toast"></div>
         <div id="msgEmail" class="toast"></div>
@@ -91,6 +92,11 @@
                         <p id="avisoTermos" class="aviso-termos">
                             Você precisa aceitar os termos de uso para se cadastrar.
                         </p>
+
+                        <div class="cf-turnstile" data-sitekey="0x4AAAAAADl7BW2lWXKio9KV"
+                            data-callback="onTurnstileCadastroSuccess"
+                            data-expired-callback="onTurnstileCadastroExpired">
+                        </div>
 
                         <button type="submit">Registrar</button>
                     </form>

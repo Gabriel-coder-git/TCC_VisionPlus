@@ -32,6 +32,7 @@ public class UsuarioService {
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final EmailHttpService emailHttpService;
+    private final TurnstileService turnstileService;
 
     @Value("${front.login.url}")
     private String frontLoginUrl;
@@ -43,7 +44,8 @@ public class UsuarioService {
             LojaRepositorio lr,
             ImageService imageService,
             EmailService emailService,
-            EmailHttpService emailHttpService
+            EmailHttpService emailHttpService,
+            TurnstileService turnstileService
     ) {
         this.r = r;
         this.lr = lr;
@@ -51,12 +53,17 @@ public class UsuarioService {
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
         this.emailHttpService = emailHttpService;
+        this.turnstileService = turnstileService;
     }
 
 
 
 
     public Usuario salvar(Usuario usuario) {
+
+        if (!turnstileService.validarToken(usuario.getCaptchaToken())) {
+            throw new RuntimeException("Falha na verificação anti-bot. Tente novamente.");
+        }
 
         if (r.existsByEmail(usuario.getEmail())) {
             throw new UsuarioExceptions("Email já cadastrado");
@@ -148,6 +155,11 @@ public class UsuarioService {
     }
 
     public ResponseEntity<?> recuperaSenha(recuperaSenhaDTO dto) {
+
+        if (!turnstileService.validarToken(dto.getCaptchaToken())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Falha na verificação anti-bot. Tente novamente.");
+        }
 
         try {
             if (dto.getEmail() == null || dto.getEmail().isBlank()

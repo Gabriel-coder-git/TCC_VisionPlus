@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>Login do usuário</title>
     <link rel="stylesheet" href="css/pages/Cadastro.css">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 
 <body>
@@ -19,11 +20,9 @@
 
             <!-- LADO ESQUERDO: GIFS -->
             <section class="auth-visual">
-                <img
-                    id="authGif"
+                <img id="authGif"
                     src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExcmxoZGxkZHZtMG54dGtmajh0cnp3M25wZDBnanRkMnEzZnJoNHVkaSZlcD12MV9pbnRlcm5hbF9naWQmY3Q9Zw/xUOrw1p8ATwqTPX1NC/giphy.gif"
-                    alt="Animação VisionPlus+"
-                >
+                    alt="Animação VisionPlus+">
 
                 <div class="auth-visual-overlay"></div>
 
@@ -61,6 +60,10 @@
 
                         <label for="senha">Senha:</label>
                         <input type="password" id="senha" name="senha" placeholder="Senha" required>
+
+                        <div class="cf-turnstile" data-sitekey="0x4AAAAAADl7BW2lWXKio9KV"
+                            data-callback="onTurnstileLoginSuccess" data-expired-callback="onTurnstileLoginExpired">
+                        </div>
 
                         <button type="submit">Login</button>
                     </form>

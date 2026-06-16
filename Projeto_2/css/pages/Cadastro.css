@@ -671,3 +671,127 @@ input:focus {
         font-size: 24px;
     }
 }
+
+/* ==================================================
+   PATCH CADASTRO COM TURNSTILE
+   Ajusta altura geral e evita cortar título/links
+================================================== */
+
+body.cadastro-page {
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+/* Aumenta o espaço útil da página de cadastro */
+body.cadastro-page .auth-page {
+    min-height: calc(100vh - 86px);
+    padding: 48px 24px 56px;
+    align-items: center;
+}
+
+/* Deixa o container crescer conforme o formulário */
+body.cadastro-page .auth-shell {
+    height: auto;
+    min-height: 680px;
+    max-height: none;
+    align-items: stretch;
+}
+
+/* Mantém o visual esquerdo acompanhando a altura do formulário */
+body.cadastro-page .auth-visual {
+    min-height: 680px;
+}
+
+/* O lado direito não pode cortar conteúdo */
+body.cadastro-page .auth-form-side {
+    min-height: 680px;
+    height: auto;
+    overflow: visible;
+    padding: 32px 34px;
+}
+
+/* Card do formulário mais compacto e visível */
+body.cadastro-page .form-card {
+    width: 100%;
+    max-width: 500px;
+}
+
+/* Garante que o título apareça inteiro */
+body.cadastro-page .form-card h1 {
+    display: block;
+    margin: 0 0 8px;
+    padding: 0;
+    line-height: 1.2;
+    font-size: 28px;
+    text-align: center;
+    color: #156783;
+}
+
+/* Reduz um pouco o formulário para caber com Turnstile */
+body.cadastro-page .auth-form-side form {
+    padding: 22px 28px;
+}
+
+body.cadastro-page .auth-form-side label {
+    font-size: 13px;
+    margin: 3px 0;
+}
+
+body.cadastro-page .auth-form-side input {
+    padding: 10px 13px;
+    margin: 5px 0 10px;
+}
+
+/* Termos e Cloudflare mais compactos */
+body.cadastro-page .termos-area {
+    margin: 10px 0 6px;
+    padding: 10px;
+}
+
+body.cadastro-page .cf-turnstile {
+    display: flex;
+    justify-content: center;
+    margin: 8px 0 6px;
+    min-height: 65px;
+}
+
+/* Botão e link inferior */
+body.cadastro-page .auth-form-side button[type="submit"] {
+    margin-top: 6px;
+    padding: 12px;
+}
+
+body.cadastro-page .auth-footer-link {
+    display: block;
+    margin-top: 12px;
+    margin-bottom: 0;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+/* Responsivo */
+@media (max-width: 900px) {
+    body.cadastro-page .auth-page {
+        padding: 20px 14px 36px;
+        align-items: flex-start;
+    }
+
+    body.cadastro-page .auth-shell {
+        min-height: auto;
+        grid-template-columns: 1fr;
+    }
+
+    body.cadastro-page .auth-visual {
+        min-height: 240px;
+        height: 240px;
+    }
+
+    body.cadastro-page .auth-form-side {
+        min-height: auto;
+        padding: 24px 16px;
+    }
+
+    body.cadastro-page .auth-form-side form {
+        padding: 20px;
+    }
+}

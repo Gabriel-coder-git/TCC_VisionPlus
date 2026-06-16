@@ -57,4 +57,7 @@ public class Usuario {
     @JsonIgnore
     private LocalDateTime expiracaoTokenRecuperacao;
 
+    @Transient
+    private String captchaToken;
+
 }

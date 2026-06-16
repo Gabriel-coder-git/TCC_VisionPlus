@@ -9,6 +9,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const msgLogin = document.querySelector("#msgLogin");
     const botaoSubmit = form.querySelector("button[type='submit']");
 
+    let turnstileToken = null;
+
+    window.onTurnstileSuccess = function (token) {
+        turnstileToken = token;
+    };
+
+    window.onTurnstileExpired = function () {
+        turnstileToken = null;
+    };
+
     function mostrarMensagem(elemento, texto, tipo) {
         elemento.textContent = texto;
         elemento.classList.remove("sucesso", "erro");
@@ -34,9 +44,19 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+        if (!turnstileToken) {
+            mostrarMensagem(
+                msgLogin,
+                "Confirme que você não é um robô.",
+                "erro"
+            );
+            return;
+        }
+
         const dadosRecuperacao = {
             nome,
-            email
+            email,
+            captchaToken: turnstileToken
         };
 
         try {
@@ -86,9 +106,14 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
         } finally {
+            if (window.turnstile) {
+                window.turnstile.reset();
+                turnstileToken = null;
+            }
             botaoSubmit.classList.remove("carregando");
             botaoSubmit.disabled = false;
             botaoSubmit.textContent = "Recuperar Senha";
+
         }
     });
 });

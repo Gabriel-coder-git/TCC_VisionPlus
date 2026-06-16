@@ -6,4 +6,5 @@ import lombok.Data;
 public class recuperaSenhaDTO {
     private String nome;
     private String email;
+    private String captchaToken;
 }

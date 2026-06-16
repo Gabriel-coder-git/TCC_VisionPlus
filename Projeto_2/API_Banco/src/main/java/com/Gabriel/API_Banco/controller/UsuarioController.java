@@ -19,6 +19,7 @@ import com.Gabriel.API_Banco.model.Usuario;
 import com.Gabriel.API_Banco.service.UsuarioService;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import com.Gabriel.API_Banco.service.TurnstileService;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -28,11 +29,18 @@ public class UsuarioController {
     private final UsuarioService s;
     private final UsuarioRepositorio r;
     private final PasswordEncoder passwordEncoder;
+    private final TurnstileService turnstileService;
 
-    public UsuarioController(UsuarioService s, PasswordEncoder passwordEncoder, UsuarioRepositorio r) {
+    public UsuarioController(
+            UsuarioService s,
+            PasswordEncoder passwordEncoder,
+            UsuarioRepositorio r,
+            TurnstileService turnstileService
+    ) {
         this.s = s;
         this.r = r;
         this.passwordEncoder = passwordEncoder;
+        this.turnstileService = turnstileService;
     }
 
     @PostMapping("/registrar")
@@ -52,6 +60,11 @@ public class UsuarioController {
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUsuario(@RequestBody Usuario usuario) {
+        if (!turnstileService.validarToken(usuario.getCaptchaToken())) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Falha na verificação anti-bot. Tente novamente.");
+        }
 
         Optional<Usuario> usuarioNoBanco = s.consultarPorEmail(usuario.getEmail());
 

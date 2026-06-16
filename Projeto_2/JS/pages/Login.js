@@ -13,6 +13,16 @@ document.addEventListener("DOMContentLoaded", () => {
     let processando = false;
     let loginSucesso = false;
 
+    let turnstileToken = null;
+
+    window.onTurnstileLoginSuccess = function (token) {
+        turnstileToken = token;
+    };
+
+    window.onTurnstileLoginExpired = function () {
+        turnstileToken = null;
+    };
+
     function mostrarMensagem(elemento, texto, tipo) {
         elemento.textContent = texto;
         elemento.classList.remove("sucesso", "erro");
@@ -55,7 +65,16 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        const usuarioLogin = { email, senha };
+        if (!turnstileToken) {
+            mostrarMensagem(msgLogin, "Confirme que você não é um robô.", "erro");
+            return;
+        }
+
+        const usuarioLogin = {
+            email,
+            senha,
+            captchaToken: turnstileToken
+        };
 
         try {
             processando = true;
@@ -107,6 +126,11 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
         } finally {
+            if (window.turnstile) {
+                window.turnstile.reset();
+                turnstileToken = null;
+            }
+
             if (!loginSucesso) {
                 processando = false;
                 btnSubmit.classList.remove("carregando");
