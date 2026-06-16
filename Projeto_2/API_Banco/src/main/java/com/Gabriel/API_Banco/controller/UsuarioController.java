@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import com.Gabriel.API_Banco.model.Usuario;
 import com.Gabriel.API_Banco.service.UsuarioService;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -26,10 +27,12 @@ public class UsuarioController {
 
     private final UsuarioService s;
     private final UsuarioRepositorio r;
+    private final PasswordEncoder passwordEncoder;
 
-    public UsuarioController(UsuarioService s, UsuarioRepositorio r) {
+    public UsuarioController(UsuarioService s, PasswordEncoder passwordEncoder, UsuarioRepositorio r) {
         this.s = s;
         this.r = r;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/registrar")
@@ -47,40 +50,39 @@ public class UsuarioController {
     @PostMapping("/login")
     public ResponseEntity<?> loginUsuario(@RequestBody Usuario usuario) {
 
-        // Busca nome no banco, para validar o nome do usuário e se ele está cadastrado
-        Optional<Usuario> nomeNoBanco = s.consultarPorNome(usuario.getNome());
-
-        if (nomeNoBanco.isEmpty()) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body("Username não encontrado!");
-        }
-
-        // Busca email no banco, para validar primeiro o email do usuário e se ele está cadastrado
         Optional<Usuario> usuarioNoBanco = s.consultarPorEmail(usuario.getEmail());
 
-        // Se NÃO encontrou usuário
         if (usuarioNoBanco.isEmpty()) {
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
                     .body("Email não encontrado!");
         }
 
-        //Se a validação do email der certo, ele vai pegar a senha para comparar
-        String senhaNoBanco = usuarioNoBanco.get().getSenha();
+        Usuario usuarioEncontrado = usuarioNoBanco.get();
 
-        // Compara com a senha que veio no login
-        if (!usuario.getSenha().equals(senhaNoBanco)) {
+        String senhaDigitada = usuario.getSenha();
+        String senhaNoBanco = usuarioEncontrado.getSenha();
 
-            // Se ela atender a condição imposta, de que não batem, devolve que a senha é inválida
+        boolean senhaValida;
+
+        if (senhaNoBanco != null && senhaNoBanco.startsWith("$2")) {
+            senhaValida = passwordEncoder.matches(senhaDigitada, senhaNoBanco);
+        } else {
+            senhaValida = senhaDigitada.equals(senhaNoBanco);
+
+            if (senhaValida) {
+                usuarioEncontrado.setSenha(passwordEncoder.encode(senhaDigitada));
+                s.salvar(usuarioEncontrado);
+            }
+        }
+
+        if (!senhaValida) {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
                     .body("Senha inválida!");
         }
 
-        // Se chegou até aqui, o email e a senha estão corretos!!
-        // Retorna o usuário inteiro → vira JSON automaticamente
-        return ResponseEntity.ok(usuarioNoBanco.get());
+        return ResponseEntity.ok(usuarioEncontrado);
     }
 
     @PutMapping("/editarUsuario")

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import java.time.LocalDateTime;
 import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
@@ -30,6 +31,7 @@ public class Usuario {
     @Column(name = "email", unique = true)
     private String email;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(length = 100, nullable = false)
     private String senha;
 
@@ -42,5 +44,17 @@ public class Usuario {
 
     @Column(name = "url_foto")
     private String fotoUrl;
+
+    private Boolean aceitouTermos = false;
+
+    private String versaoTermos;
+
+    private LocalDateTime dataAceiteTermos;
+
+    @JsonIgnore
+    private String tokenRecuperacao;
+
+    @JsonIgnore
+    private LocalDateTime expiracaoTokenRecuperacao;
 
 }

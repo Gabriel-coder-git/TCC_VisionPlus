@@ -10,12 +10,14 @@ import com.Gabriel.API_Banco.dto.recuperaSenhaDTO;
 import com.Gabriel.API_Banco.exceptions.UsuarioExceptions;
 import com.Gabriel.API_Banco.repository.LojaRepositorio;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.Gabriel.API_Banco.model.Usuario;
 import com.Gabriel.API_Banco.repository.UsuarioRepositorio;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.UUID;
+import java.time.LocalDateTime;
 
 
 
@@ -26,13 +28,15 @@ public class UsuarioService {
     private final LojaRepositorio lr;
     private final ImageService imageService;
     private final EmailService emailService;
+    private final PasswordEncoder passwordEncoder;
 
 
-    public UsuarioService(UsuarioRepositorio r, LojaRepositorio lr, ImageService imageService, EmailService emailService) {
+    public UsuarioService(UsuarioRepositorio r, PasswordEncoder passwordEncoder, LojaRepositorio lr, ImageService imageService, EmailService emailService) {
         this.r = r;
         this.lr = lr;
         this.imageService = imageService;
         this.emailService = emailService;
+        this.passwordEncoder = passwordEncoder;
     }
 
 
@@ -44,9 +48,18 @@ public class UsuarioService {
             throw new UsuarioExceptions("Email já cadastrado");
         }
 
-        if (r.existsByNome(usuario.getNome())) {
-            throw new UsuarioExceptions("Nome de usuário já cadastrado");
+        if (usuario.getSenha() == null || usuario.getSenha().isBlank()) {
+            throw new RuntimeException("Senha é obrigatória.");
         }
+
+        usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
+
+        if (usuario.getAceitouTermos() == null || !usuario.getAceitouTermos()) {
+            throw new RuntimeException("É necessário aceitar os Termos de Uso e a Política de Privacidade.");
+        }
+
+        usuario.setVersaoTermos("v2");
+        usuario.setDataAceiteTermos(LocalDateTime.now());
 
         return r.save(usuario);
     }

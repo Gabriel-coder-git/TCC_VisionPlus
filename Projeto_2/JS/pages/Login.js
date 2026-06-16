@@ -47,16 +47,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (processando) return;
 
-        const nome = document.querySelector("#nome").value.trim();
         const email = document.querySelector("#email").value.trim();
         const senha = document.querySelector("#senha").value;
 
-        if (!nome || !email || !senha) {
+        if (!email || !senha) {
             mostrarMensagem(msgLogin, "Preencha todos os campos.", "erro");
             return;
         }
 
-        const usuarioLogin = { nome, email, senha };
+        const usuarioLogin = { email, senha };
 
         try {
             processando = true;
