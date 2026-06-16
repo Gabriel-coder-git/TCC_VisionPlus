@@ -16,6 +16,20 @@ function mostrarErro(texto) {
     alert(texto);
 }
 
+function planoPermiteChat(cotacao) {
+    const plano = cotacao.loja?.plano || "FREE";
+    return plano !== "FREE";
+}
+
+function htmlChatBloqueado() {
+    return `
+        <div class="chat-bloqueado-plano">
+            <strong>Chat indisponível</strong>
+            <p>Esta ótica está não possui a funcionalidade de chat habilitada.</p>
+        </div>
+    `;
+}
+
 function bloquearBotao(botao, texto) {
     if (!botao) return;
 
@@ -382,14 +396,19 @@ export function abrirModalCotacaoConsumidor(cotacao, onStatusAtualizado) {
                 </div>
 
                 <div class="painel-direito">
-                    <div class="chat-mensagens" id="chatMensagens">
-                        <p class="chat-vazio">Carregando mensagens...</p>
-                    </div>
+                    ${planoPermiteChat(cotacao)
+            ? `
+                                <div class="chat-mensagens" id="chatMensagens">
+                                    <p class="chat-vazio">Carregando mensagens...</p>
+                                </div>
 
-                    <div class="chat-input-area">
-                        <input type="text" id="chatInput"  maxlength="500" placeholder="Escreva uma mensagem..." />
-                        <button id="btnEnviarChat">➤</button>
-                    </div>
+                                <div class="chat-input-area">
+                                    <input type="text" id="chatInput" maxlength="500" placeholder="Escreva uma mensagem..." />
+                                    <button id="btnEnviarChat">➤</button>
+                                </div>
+                            `
+            : htmlChatBloqueado()
+        }
                 </div>
 
             </div>
@@ -402,7 +421,9 @@ export function abrirModalCotacaoConsumidor(cotacao, onStatusAtualizado) {
 
     renderizarPainelConsumidor(cotacao, modal, onStatusAtualizado);
 
-    iniciarChat(modal, cotacao, usuario);
+    if (planoPermiteChat(cotacao)) {
+        iniciarChat(modal, cotacao, usuario);
+    }
 
     function fechar() {
         modal.classList.remove("ativo");

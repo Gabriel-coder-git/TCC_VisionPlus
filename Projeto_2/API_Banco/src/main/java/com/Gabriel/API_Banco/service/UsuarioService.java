@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+import com.Gabriel.API_Banco.dto.AlterarSenhaDTO;
+
 import com.Gabriel.API_Banco.dto.EditarUsuarioDTO;
 import com.Gabriel.API_Banco.dto.ListarUsuariosDTO;
 import com.Gabriel.API_Banco.dto.recuperaSenhaDTO;
@@ -117,6 +119,45 @@ public class UsuarioService {
 
                 ))
                 .toList();
+    }
+
+    public void alterarSenha(AlterarSenhaDTO dto) {
+        if (dto.getIdUsuario() == null) {
+            throw new RuntimeException("Usuário inválido.");
+        }
+
+        if (dto.getSenhaAtual() == null || dto.getSenhaAtual().isBlank()) {
+            throw new RuntimeException("Senha atual é obrigatória.");
+        }
+
+        if (dto.getNovaSenha() == null || dto.getNovaSenha().isBlank()) {
+            throw new RuntimeException("Nova senha é obrigatória.");
+        }
+
+        Usuario usuario = r.findById(dto.getIdUsuario())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+
+        String senhaNoBanco = usuario.getSenha();
+
+        boolean senhaAtualCorreta;
+
+        if (senhaNoBanco != null &&
+                (senhaNoBanco.startsWith("$2a$") ||
+                        senhaNoBanco.startsWith("$2b$") ||
+                        senhaNoBanco.startsWith("$2y$"))) {
+
+            senhaAtualCorreta = passwordEncoder.matches(dto.getSenhaAtual(), senhaNoBanco);
+
+        } else {
+            senhaAtualCorreta = dto.getSenhaAtual().equals(senhaNoBanco);
+        }
+
+        if (!senhaAtualCorreta) {
+            throw new RuntimeException("Senha atual incorreta.");
+        }
+
+        usuario.setSenha(passwordEncoder.encode(dto.getNovaSenha()));
+        r.save(usuario);
     }
 
     @Transactional

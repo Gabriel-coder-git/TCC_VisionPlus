@@ -12,6 +12,7 @@ import com.Gabriel.API_Banco.exceptions.UsuarioExceptions;
 import com.Gabriel.API_Banco.repository.UsuarioRepositorio;
 import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
+import com.Gabriel.API_Banco.dto.AlterarSenhaDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,6 +42,18 @@ public class UsuarioController {
         this.r = r;
         this.passwordEncoder = passwordEncoder;
         this.turnstileService = turnstileService;
+    }
+
+    @PutMapping("/alterarSenha")
+    public ResponseEntity<?> alterarSenha(@RequestBody AlterarSenhaDTO dto) {
+        try {
+            s.alterarSenha(dto);
+            return ResponseEntity.ok("Senha alterada com sucesso!");
+        } catch (RuntimeException erro) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(erro.getMessage());
+        }
     }
 
     @PostMapping("/registrar")

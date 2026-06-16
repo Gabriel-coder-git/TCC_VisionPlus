@@ -12,6 +12,21 @@ function chamarEstilizacao() {
     document.head.appendChild(link);
 }
 
+function planoPermiteChat(cotacao) {
+    const plano = cotacao.loja?.plano || "FREE";
+    return plano !== "FREE";
+}
+
+function htmlChatBloqueado() {
+    return `
+        <div class="chat-bloqueado-plano">
+            <strong>Chat indisponível no plano gratuito</strong>
+            <p>Faça upgrade do plano da loja para conversar com o cliente dentro da cotação.</p>
+            <a href="PlanosLoja.html">Ver planos</a>
+        </div>
+    `;
+}
+
 function bloquearBotao(botao, texto) {
     if (!botao) return;
 
@@ -448,15 +463,20 @@ export function abrirModalRespostaCotacaoLoja(cotacao, onStatusAtualizado) {
                 </div>
 
                 <div class="painel-direito">
-                    <div class="chat-mensagens" id="chatMensagens">
-                        <p class="chat-vazio">Carregando mensagens...</p>
-                    </div>
+                        ${planoPermiteChat(cotacao)
+            ? `
+                                    <div class="chat-mensagens" id="chatMensagens">
+                                        <p class="chat-vazio">Carregando mensagens...</p>
+                                    </div>
 
-                    <div class="chat-input-area">
-                        <input type="text" id="chatInput"  maxlength="500" placeholder="Escreva uma mensagem..." />
-                        <button id="btnEnviarChat">➤</button>
+                                    <div class="chat-input-area">
+                                        <input type="text" id="chatInput" maxlength="500" placeholder="Escreva uma mensagem..." />
+                                        <button id="btnEnviarChat">➤</button>
+                                    </div>
+                                `
+            : htmlChatBloqueado()
+        }
                     </div>
-                </div>
 
             </div>
         </div>
@@ -468,7 +488,9 @@ export function abrirModalRespostaCotacaoLoja(cotacao, onStatusAtualizado) {
 
     renderizarPainelLoja(cotacao, modal, onStatusAtualizado);
 
-    iniciarChat(modal, cotacao, usuario);
+    if (planoPermiteChat(cotacao)) {
+        iniciarChat(modal, cotacao, usuario);
+    }
 
     function fechar() {
         modal.classList.remove("ativo");
