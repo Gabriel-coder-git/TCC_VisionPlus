@@ -131,6 +131,7 @@ export function adicionarProdutoCotacao(produto, tipo) {
 export function alternarCotacao() {
     if (!validarPermissaoCotacao()) return;
 
+    atualizarUsuarioLogadoNoModal();
     modal.classList.toggle("ativo");
 }
 
@@ -183,6 +184,32 @@ function getIdLojaDaUrl() {
     return parseInt(params.get("id"), 10);
 }
 
+function numeroDecimalOuNull(id) {
+    const valor = document.getElementById(id)?.value;
+    if (valor === undefined || valor === null || valor === "") return null;
+    return parseFloat(valor);
+}
+
+function inteiroOuNull(id) {
+    const valor = document.getElementById(id)?.value;
+    if (valor === undefined || valor === null || valor === "") return null;
+    return parseInt(valor, 10);
+}
+
+function obterTratamentosSelecionados() {
+    return Array.from(document.querySelectorAll('input[name="tratamentos"]:checked'))
+        .map(input => input.value)
+        .join(",");
+}
+
+function atualizarUsuarioLogadoNoModal() {
+    const usuario = getUsuarioLogado();
+    const el = document.getElementById("solicitacao-como");
+    if (el && usuario) {
+        el.textContent = `Solicitação feita como: ${usuario.nome} - ${usuario.email}`;
+    }
+}
+
 // ------------------------------
 // Eventos do modal
 // ------------------------------
@@ -193,7 +220,13 @@ btnFlutuante?.addEventListener("click", () => {
 });
 
 btnFecharModal?.addEventListener("click", () => {
-    modal.classList.toggle("ativo");
+    modal.classList.remove("ativo");
+});
+
+modal?.addEventListener("click", (event) => {
+    if (event.target === modal) {
+        modal.classList.remove("ativo");
+    }
 });
 
 // ------------------------------
@@ -209,17 +242,51 @@ formCotacao?.addEventListener("submit", async (event) => {
 
     const usuario = getUsuarioLogado();
 
-    if (!lenteSelecionada || !armacaoSelecionada) {
+    if (!lenteSelecionada && !armacaoSelecionada) {
         mostrarMensagem(
             msgPaginaLoja,
-            "Selecione uma lente e uma armação para solicitar cotação.",
+            "Selecione uma lente, uma armação ou ambos para solicitar cotação.",
             "erro"
         );
         return;
     }
 
-    const grauEsquerdo = parseFloat(document.getElementById("grau-esq").value) || null;
-    const grauDireito = parseFloat(document.getElementById("grau-dir").value) || null;
+    const esfericoEsquerdo = numeroDecimalOuNull("esferico-esq");
+    const esfericoDireito = numeroDecimalOuNull("esferico-dir");
+    const cilindricoEsquerdo = numeroDecimalOuNull("cilindrico-esq");
+    const cilindricoDireito = numeroDecimalOuNull("cilindrico-dir");
+    const eixoEsquerdo = inteiroOuNull("eixo-esq");
+    const eixoDireito = inteiroOuNull("eixo-dir");
+    const adicao = numeroDecimalOuNull("adicao");
+    const tipoLenteDesejado = document.getElementById("tipo-lente-desejado")?.value || null;
+    const tratamentosDesejados = obterTratamentosSelecionados();
+    const observacoes = document.getElementById("observacoes-cotacao")?.value.trim() || null;
+    const receitaArquivo = document.getElementById("receita-arquivo")?.files?.[0] || null;
+
+    if ((eixoEsquerdo !== null && (eixoEsquerdo < 0 || eixoEsquerdo > 180)) ||
+        (eixoDireito !== null && (eixoDireito < 0 || eixoDireito > 180))) {
+        mostrarMensagem(msgPaginaLoja, "Eixo deve estar entre 0 e 180.", "erro");
+        return;
+    }
+
+    if (adicao !== null && adicao < 0) {
+        mostrarMensagem(msgPaginaLoja, "Adição deve ser positiva ou zero.", "erro");
+        return;
+    }
+
+    const temAlgumDadoTecnico = [
+        esfericoEsquerdo, esfericoDireito, cilindricoEsquerdo, cilindricoDireito,
+        eixoEsquerdo, eixoDireito, adicao, tipoLenteDesejado, tratamentosDesejados
+    ].some(valor => valor !== null && valor !== "");
+
+    if (!temAlgumDadoTecnico && !observacoes && !receitaArquivo) {
+        mostrarMensagem(
+            msgPaginaLoja,
+            "Informe algum dado da receita, anexe a receita ou escreva uma observação.",
+            "erro"
+        );
+        return;
+    }
 
     const idLoja = getIdLojaDaUrl();
 
@@ -230,18 +297,29 @@ formCotacao?.addEventListener("submit", async (event) => {
 
     const dadosCotacao = {
         produto: {
-            nome: lenteSelecionada?.nome || armacaoSelecionada?.nome || "Produto",
+            nome: [lenteSelecionada?.nome, armacaoSelecionada?.nome].filter(Boolean).join(" + ") || "Produto",
             idLente: lenteSelecionada?.id || null,
             idArmacao: armacaoSelecionada?.id || null,
-            grauDireito,
-            grauEsquerdo,
+            grauDireito: esfericoDireito,
+            grauEsquerdo: esfericoEsquerdo,
             idUsuario: usuario.id,
             idLoja,
             valor: (lenteSelecionada?.preco || 0) + (armacaoSelecionada?.preco || 0),
             prazoEntrega: 7
         },
         idUsuario: usuario.id,
-        idLoja
+        idLoja,
+        esfericoEsquerdo,
+        esfericoDireito,
+        cilindricoEsquerdo,
+        cilindricoDireito,
+        eixoEsquerdo,
+        eixoDireito,
+        adicao,
+        tipoLenteDesejado,
+        tratamentosDesejados,
+        observacoes,
+        receitaArquivo
     };
 
     try {

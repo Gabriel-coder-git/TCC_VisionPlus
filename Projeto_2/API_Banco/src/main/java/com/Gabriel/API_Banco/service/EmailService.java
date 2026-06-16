@@ -68,7 +68,11 @@ public class EmailService {
                         "Muito obrigado, novamente, por confiar na VisionPlus+!"
         );
 
-        mailSender.send(message);
+        try {
+            mailSender.send(message);
+        } catch (Exception e) {
+            System.err.println("Erro ao enviar e-mail de criação da cotação: " + e.getMessage());
+        }
 
     }
 

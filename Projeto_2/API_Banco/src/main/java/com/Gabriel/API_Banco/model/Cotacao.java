@@ -5,6 +5,7 @@ import java.time.LocalDate;
 
 import com.Gabriel.API_Banco.model.enums.StatusCotacao;
 
+import com.Gabriel.API_Banco.model.enums.TipoLente;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -80,5 +81,39 @@ public class Cotacao {
 
     @Column(name = "valor_desconto", precision = 10, scale = 2)
     private BigDecimal valorDesconto;
+
+    @Column(name = "esferico_esquerdo", precision = 5, scale = 2)
+    private BigDecimal esfericoEsquerdo;
+
+    @Column(name = "esferico_direito", precision = 5, scale = 2)
+    private BigDecimal esfericoDireito;
+
+    @Column(name = "cilindrico_esquerdo", precision = 5, scale = 2)
+    private BigDecimal cilindricoEsquerdo;
+
+    @Column(name = "cilindrico_direito", precision = 5, scale = 2)
+    private BigDecimal cilindricoDireito;
+
+    @Column(name = "eixo_esquerdo")
+    private Integer eixoEsquerdo;
+
+    @Column(name = "eixo_direito")
+    private Integer eixoDireito;
+
+    @Column(name = "adicao", precision = 5, scale = 2)
+    private BigDecimal adicao;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_lente_desejado", length = 40)
+    private TipoLente tipoLenteDesejado;
+
+    @Column(name = "tratamentos_desejados", length = 500)
+    private String tratamentosDesejados;
+
+    @Column(name = "observacoes", columnDefinition = "TEXT")
+    private String observacoes;
+
+    @Column(name = "receita_url", length = 1000)
+    private String receitaUrl;
 }
 

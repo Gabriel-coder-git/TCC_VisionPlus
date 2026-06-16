@@ -47,6 +47,18 @@ function getIdCotacao(cotacao) {
     return cotacao.idCotacao || cotacao.id;
 }
 
+function valorOuTraco(valor) {
+    return valor !== null && valor !== undefined && valor !== "" ? valor : "—";
+}
+
+function formatarEnum(valor) {
+    return valor ? valor.replace(/_/g, " ") : "—";
+}
+
+function formatarTratamentos(valor) {
+    return valor ? valor.split(",").map(item => item.replace(/_/g, " ")).join(", ") : "—";
+}
+
 function usuarioPodeUsarModalConsumidor(usuario) {
     return usuario && usuario.tipoUsuario === "Comum";
 }
@@ -277,6 +289,52 @@ export function abrirModalCotacaoConsumidor(cotacao, onStatusAtualizado) {
                             <span class="dado-chave">Produto</span>
                             <span class="dado-valor">${cotacao.produto?.nome ?? "—"}</span>
                         </div>
+
+                        <div class="dado-row">
+                            <span class="dado-chave">Esférico</span>
+                            <span class="dado-valor">OE ${valorOuTraco(cotacao.esfericoEsquerdo)} | OD ${valorOuTraco(cotacao.esfericoDireito)}</span>
+                        </div>
+
+                        <div class="dado-row">
+                            <span class="dado-chave">Cilíndrico</span>
+                            <span class="dado-valor">OE ${valorOuTraco(cotacao.cilindricoEsquerdo)} | OD ${valorOuTraco(cotacao.cilindricoDireito)}</span>
+                        </div>
+
+                        <div class="dado-row">
+                            <span class="dado-chave">Eixo</span>
+                            <span class="dado-valor">OE ${valorOuTraco(cotacao.eixoEsquerdo)} | OD ${valorOuTraco(cotacao.eixoDireito)}</span>
+                        </div>
+
+                        <div class="dado-row">
+                            <span class="dado-chave">Adição</span>
+                            <span class="dado-valor">${valorOuTraco(cotacao.adicao)}</span>
+                        </div>
+
+                        <div class="dado-row">
+                            <span class="dado-chave">Tipo de lente desejado</span>
+                            <span class="dado-valor">${formatarEnum(cotacao.tipoLenteDesejado)}</span>
+                        </div>
+
+                        <div class="dado-row" style="flex-direction:column;align-items:flex-start;gap:4px">
+                            <span class="dado-chave">Tratamentos desejados</span>
+                            <span class="dado-valor" style="font-weight:400;color:#374151">${formatarTratamentos(cotacao.tratamentosDesejados)}</span>
+                        </div>
+
+                        ${cotacao.receitaUrl ? `
+                            <div class="dado-row">
+                                <span class="dado-chave">Receita anexada</span>
+                                <span class="dado-valor"><a href="${cotacao.receitaUrl}" target="_blank" rel="noopener noreferrer">Abrir receita</a></span>
+                            </div>
+                        ` : ""}
+
+                        ${cotacao.observacoes || cotacao.obsCliente ? `
+                            <div class="dado-row" style="flex-direction:column;align-items:flex-start;gap:4px">
+                                <span class="dado-chave">Observações do cliente</span>
+                                <span class="dado-valor" style="font-weight:400;color:#374151">
+                                    ${cotacao.observacoes || cotacao.obsCliente}
+                                </span>
+                            </div>
+                        ` : ""}
 
                         <div class="dado-row">
                             <span class="dado-chave">Grau OD</span>

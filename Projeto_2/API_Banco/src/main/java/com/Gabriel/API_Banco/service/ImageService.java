@@ -48,6 +48,7 @@ public class ImageService {
     }
 
     private static final long TAMANHO_MAXIMO_IMAGEM = 5 * 1024 * 1024;
+    private static final long TAMANHO_MAXIMO_RECEITA = 10 * 1024 * 1024;
 
     private void validarImagem(MultipartFile file) {
         if (file == null || file.isEmpty()) {
@@ -66,6 +67,41 @@ public class ImageService {
 
         if (file.getSize() > TAMANHO_MAXIMO_IMAGEM) {
             throw new RuntimeException("Arquivo maior que 5MB.");
+        }
+    }
+
+
+    public String uploadReceita(MultipartFile file) throws IOException {
+        validarReceita(file);
+
+        Map uploadResult = cloudinary.uploader().upload(
+                file.getBytes(),
+                ObjectUtils.asMap(
+                        "folder", "receitas_cotacao",
+                        "resource_type", "auto"
+                )
+        );
+
+        return uploadResult.get("secure_url").toString();
+    }
+
+    private void validarReceita(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new RuntimeException("Arquivo de receita é obrigatório.");
+        }
+
+        String contentType = file.getContentType();
+
+        if (contentType == null ||
+                (!contentType.equals("application/pdf") &&
+                        !contentType.equals("image/jpeg") &&
+                        !contentType.equals("image/png") &&
+                        !contentType.equals("image/jpg"))) {
+            throw new RuntimeException("Formato inválido. Use PDF, PNG, JPG ou JPEG.");
+        }
+
+        if (file.getSize() > TAMANHO_MAXIMO_RECEITA) {
+            throw new RuntimeException("Arquivo maior que 10MB.");
         }
     }
 

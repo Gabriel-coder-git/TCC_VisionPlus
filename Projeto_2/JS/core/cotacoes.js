@@ -2,10 +2,14 @@ import { API } from "./api.js";
 import { getUsuarioLogado } from "./auth.js";
 
 export async function criarCotacao(dadosCotacao) {
+    const arquivoReceita = dadosCotacao.receitaArquivo || null;
+    const payload = { ...dadosCotacao };
+    delete payload.receitaArquivo;
+
     const response = await fetch(`${API}/cotacoes/criarCotacao`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(dadosCotacao),
+        body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
@@ -13,7 +17,27 @@ export async function criarCotacao(dadosCotacao) {
         throw new Error(mensagemErro || `Erro na requisição: ${response.status}`);
     }
 
-    return response.json();
+    let cotacaoCriada = await response.json();
+
+    if (arquivoReceita) {
+        const idCotacao = cotacaoCriada.idCotacao || cotacaoCriada.id;
+        const formData = new FormData();
+        formData.append("arquivo", arquivoReceita);
+
+        const uploadResponse = await fetch(`${API}/cotacoes/${idCotacao}/receita?idUsuario=${payload.idUsuario}`, {
+            method: "POST",
+            body: formData
+        });
+
+        if (!uploadResponse.ok) {
+            const mensagemErro = await uploadResponse.text();
+            throw new Error(mensagemErro || "Cotação criada, mas houve erro ao anexar a receita.");
+        }
+
+        cotacaoCriada = await uploadResponse.json();
+    }
+
+    return cotacaoCriada;
 }
 
 export async function listarCotacoesPorUsuario(idUsuario) {
@@ -63,8 +87,8 @@ export function criarCardCotacao(cotacao, onAbrir) {
     const status = cotacao.status || "SOLICITADA";
     const valorBase = cotacao.produto?.valor ?? cotacao.valorBase ?? "-";
     const valorFinal = cotacao.valorFinal ?? null;
-    const grauDir = cotacao.produto?.grauDireito ?? "-";
-    const grauEsq = cotacao.produto?.grauEsquerdo ?? "-";
+    const tipoLente = cotacao.tipoLenteDesejado ? cotacao.tipoLenteDesejado.replace(/_/g, " ") : "Não informado";
+    const possuiReceita = cotacao.receitaUrl ? "Sim" : "Não";
 
     const cfg = STATUS_CONFIG?.[status] || {
         label: status.replace(/_/g, " "),
@@ -84,7 +108,8 @@ export function criarCardCotacao(cotacao, onAbrir) {
         </div>
 
         <div class="card-cotacao-dados">
-            <p><strong>Grau:</strong> OD ${grauDir} | OE ${grauEsq}</p>
+            <p><strong>Tipo lente:</strong> ${tipoLente}</p>
+            <p><strong>Receita anexada:</strong> ${possuiReceita}</p>
             <p><strong>Valor base:</strong> R$ ${valorBase}</p>
             ${
                 valorFinal

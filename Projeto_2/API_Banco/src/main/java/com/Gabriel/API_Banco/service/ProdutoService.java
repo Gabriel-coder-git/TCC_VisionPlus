@@ -34,11 +34,17 @@ public class ProdutoService {
         Loja loja = lojaRepo.findById(dto.getIdLoja())
                 .orElseThrow(() -> new RuntimeException("Loja não encontrada"));
 
-        Lente lente = lenteRepo.findById(dto.getIdLente())
-                .orElseThrow(() -> new RuntimeException("Lente não encontrada"));
+        Lente lente = null;
+        if (dto.getIdLente() != null) {
+            lente = lenteRepo.findById(dto.getIdLente())
+                    .orElseThrow(() -> new RuntimeException("Lente não encontrada"));
+        }
 
-        Armacao armacao = armacaoRepo.findById(dto.getIdArmacao())
-                .orElseThrow(() -> new RuntimeException("Armação não encontrada"));
+        Armacao armacao = null;
+        if (dto.getIdArmacao() != null) {
+            armacao = armacaoRepo.findById(dto.getIdArmacao())
+                    .orElseThrow(() -> new RuntimeException("Armação não encontrada"));
+        }
 
         Usuario usuario = usuarioRepo.findById(dto.getIdUsuario())
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
@@ -86,3 +92,4 @@ public class ProdutoService {
     }
 
 }
+

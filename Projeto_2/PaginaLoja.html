@@ -45,30 +45,96 @@
             </div>
 
             <form id="form-cotacao">
+                <div class="cotacao-scroll">
+
+                <p class="cotacao-ajuda">
+                    Preencha somente os campos que aparecem na sua receita. Se não souber, anexe a receita ou explique nas observações.
+                </p>
+
+                <p id="solicitacao-como" class="cotacao-usuario-logado"></p>
+
+                <div class="cotacao-grid">
+                    <label>
+                        Esférico OE
+                        <input id="esferico-esq" type="number" step="0.25" placeholder="Ex: -1.50">
+                    </label>
+
+                    <label>
+                        Esférico OD
+                        <input id="esferico-dir" type="number" step="0.25" placeholder="Ex: -1.25">
+                    </label>
+
+                    <label>
+                        Cilíndrico OE
+                        <input id="cilindrico-esq" type="number" step="0.25" placeholder="Ex: -0.75">
+                    </label>
+
+                    <label>
+                        Cilíndrico OD
+                        <input id="cilindrico-dir" type="number" step="0.25" placeholder="Ex: -0.50">
+                    </label>
+
+                    <label>
+                        Eixo OE
+                        <input id="eixo-esq" type="number" step="1" min="0" max="180" placeholder="0 a 180">
+                    </label>
+
+                    <label>
+                        Eixo OD
+                        <input id="eixo-dir" type="number" step="1" min="0" max="180" placeholder="0 a 180">
+                    </label>
+
+                    <label>
+                        Adição para perto
+                        <input id="adicao" type="number" step="0.25" min="0" placeholder="Opcional">
+                    </label>
+
+                    <label>
+                        Tipo de lente desejado
+                        <select id="tipo-lente-desejado">
+                            <option value="">Selecione se souber</option>
+                            <option value="MONOFOCAL">Monofocal</option>
+                            <option value="MULTIFOCAL">Multifocal</option>
+                            <option value="BIFOCAL">Bifocal</option>
+                            <option value="OCUPACIONAL">Ocupacional</option>
+                            <option value="DESCANSO">Descanso</option>
+                            <option value="NAO_SEI_INFORMAR">Não sei informar</option>
+                        </select>
+                    </label>
+                </div>
+
+                <fieldset class="cotacao-tratamentos">
+                    <legend>Tratamentos desejados</legend>
+                    <label><input type="checkbox" name="tratamentos" value="ANTIRREFLEXO"> Antirreflexo</label>
+                    <label><input type="checkbox" name="tratamentos" value="FILTRO_AZUL"> Filtro azul</label>
+                    <label><input type="checkbox" name="tratamentos" value="FOTOSSENSIVEL"> Fotossensível</label>
+                    <label><input type="checkbox" name="tratamentos" value="ANTIRRISCO"> Antirrisco</label>
+                    <label><input type="checkbox" name="tratamentos" value="PROTECAO_UV"> Proteção UV</label>
+                    <label><input type="checkbox" name="tratamentos" value="ALTO_INDICE"> Alto índice</label>
+                    <label><input type="checkbox" name="tratamentos" value="POLICARBONATO"> Policarbonato</label>
+                    <label><input type="checkbox" name="tratamentos" value="OUTRO"> Outro</label>
+                </fieldset>
 
                 <label>
-                    Grau esquerdo
-                    <input id="grau-esq" type="number" step="0.25" min="0">
+                    Anexar receita (PDF, PNG, JPG/JPEG)
+                    <input id="receita-arquivo" type="file" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg">
                 </label>
 
                 <label>
-                    Grau direito
-                    <input id="grau-dir" type="number" step="0.25" min="0">
+                    Observações
+                    <textarea id="observacoes-cotacao" maxlength="1000" placeholder="Explique qualquer detalhe importante para a ótica."></textarea>
                 </label>
 
-                <label>
-                    Nome
-                    <input id="edit-nome-usuario" required>
-                </label>
+                <p class="cotacao-aviso">
+                    A ótica analisará os dados enviados antes de confirmar preço e disponibilidade. O VisionPlus+ apenas intermedia a solicitação de cotação.
+                </p>
+                </div>
 
-                <label>
-                    Email
-                    <input id="edit-email-usuario" type="email" required>
-                </label>
-
-                <button type="submit" id="btn-enviar-cotacao" class="button">
-                    Enviar cotação
-                </button>
+                <div class="cotacao-acoes">
+                    <button type="submit" id="btn-enviar-cotacao" class="button">
+                        Enviar cotação
+                    </button>
+                </div>
             </form>
 
         </div>

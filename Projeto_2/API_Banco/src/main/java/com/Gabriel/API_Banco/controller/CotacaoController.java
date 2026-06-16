@@ -6,6 +6,7 @@ import com.Gabriel.API_Banco.service.CotacaoService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -45,6 +46,22 @@ public class CotacaoController {
     @GetMapping("/listarCotacoesPL/{idLoja}")
     public ResponseEntity<List<ListarCotacoesDTO>> listarPorLoja(@PathVariable Long idLoja) {
         return ResponseEntity.ok(cotacaoService.listarPorLoja(idLoja));
+    }
+
+    @PostMapping("/{id}/receita")
+    public ResponseEntity<?> anexarReceita(
+            @PathVariable Long id,
+            @RequestParam Long idUsuario,
+            @RequestParam("arquivo") MultipartFile arquivo
+    ) {
+        try {
+            return ResponseEntity.ok(cotacaoService.anexarReceita(id, idUsuario, arquivo));
+        } catch (ResponseStatusException erro) {
+            return ResponseEntity.status(erro.getStatusCode()).body(erro.getReason());
+        } catch (Exception erro) {
+            erro.printStackTrace();
+            return ResponseEntity.badRequest().body(erro.getMessage());
+        }
     }
 
     // Loja envia proposta com valor + prazo
